@@ -1,0 +1,16 @@
+{% extends 'layout.html' %}
+    {% block body %}
+        <table class="table">
+            <h1>Blog</h1>
+            <tbody>
+            {% for article in articles %}
+                    <tr><td>
+                        <h3>{{article.title}}</h3>
+                        <p style="font-size: 16px">Here is an excerpt</p>
+                        <p style="font-style: italic">{{article.create_date.date()}}</p>
+                        <a href="article/{{article.id}}"><h5>READ MORE</h5></a>
+                    </td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+{% endblock %}

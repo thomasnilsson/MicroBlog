@@ -1,0 +1,20 @@
+/*Primary Button override*/
+.btn {
+    border-radius: 20px;
+}
+/*.btn-primary.deselected {
+    border-radius: 10px;
+    border: none;
+}
+.btn-primary.deselected:hover {
+
+}
+
+.btn-primary.selected {
+    background-color: #9b2743;
+    border: none;
+}
+.btn-primary.selected:hover {
+    background-color: #cc2e54;
+    border: none;
+}*/
