@@ -2,7 +2,10 @@
 
 {% block body %}
   <h1>{{article['title']}}</h1>
-  <small>Written by {{article.author}} on {{article.create_date.date()}}</small>
+  <p style="font-size: 12px; font-style: italic">
+    Written on {{article.create_date}} by {{user.name}}
+     <br> {{user.email}}
+  </p>
   <hr>
   <div>
     {{article.body | safe}}
