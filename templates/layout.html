@@ -13,6 +13,12 @@
     {% include 'includes/_navbar.html' %}    
     <div style="margin: 0 auto; width: 700px">
       {% block body %}  {% endblock %}
+      {% with messages = get_flashed_messages() %} {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-info" style="width: 300px; margin-top:5px">{{ message }}</div>
+        {% endfor %}
+      {% endif %} {% endwith %}
+      <div class="alert alert-info" style="width: 300px; margin-top:5px">{{ message }}</div>
       {% include 'includes/_footer.html' %} 
     </div> 
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>

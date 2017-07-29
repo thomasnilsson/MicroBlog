@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash, redirect, url_for, session, request, logging
+from flask import Flask, render_template, flash, redirect, url_for, session, request, logging, send_from_directory
 from data import Articles
 from flaskext.mysql import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
@@ -11,10 +11,13 @@ from werkzeug.utils import secure_filename
 # init app
 app = Flask(__name__)
 
-# Upload folder
-UPLOAD_FOLDER = '/uploads'
-ALLOWED_EXTENSIONS = set(['mp3', 'm4a', 'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+# File Upload Settings
+# Get the root folder of the application, and append the /uploads directory
+UPLOAD_FOLDER = app.root_path + '/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Disallow uploading malicious scripts etc.
+ALLOWED_EXTENSIONS = set(['mp3', 'm4a', 'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 # Config MySQL
 app.config['MYSQL_DATABASE_HOST'] = '127.0.0.1'
@@ -27,6 +30,7 @@ app.config['MYSQL_DATABASE_DB'] = 'thomas_blog'
 mysql = MySQL()
 mysql.init_app(app)
 
+# Checks if current user is authorized
 def is_logged_in(f):
     @wraps(f)
     def wrap(*args, **kwargs):
@@ -36,7 +40,8 @@ def is_logged_in(f):
             flash('Unauthorized, Please login', 'danger')
             return redirect(url_for('login'))
     return wrap
-# Home Page
+
+# Root directory - The Home Page
 @app.route('/')
 def index():
     # By default render_template looks in the '/templates/' dir
@@ -51,8 +56,38 @@ def about():
 # File Upload Page
 @app.route('/upload_file', methods=['GET', 'POST'])
 def upload_file():
+    if request.method == 'POST':
+        f = request.files['file']
+        filename = secure_filename(f.filename)
+        path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        f.save(path)
+        flash('successfully upload the file')
 
     return render_template('upload_file.html')
+
+# if request.method == 'POST':
+# 	# check if the post request has the file part
+# 	if 'file' not in request.files:
+# 		flash('No file part')
+# 		return redirect(request.url)
+# 	file = request.files['file']
+# 	# if user does not select file, browser also
+# 	# submit a empty part without filename
+# 	if file.filename == '':
+# 		flash('No selected file')
+# 		return redirect(request.url)
+# 	if file and allowed_file(file.filename):
+# 		filename = secure_filename(file.filename)
+# 		file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+# 		return redirect(url_for('uploaded_file', filename=filename))
+# 	else:
+# 		flash('Not a legal file extension')
+
+
+# File Download/view page
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 # All Articles
 @app.route('/articles')
@@ -110,6 +145,7 @@ def register():
         # Close connection
         cur.close()
         # Registration success
+        flash("User created. You may now log in!")
         return redirect(url_for('login'))
     return render_template('register.html', form=form)
 
@@ -172,9 +208,10 @@ def dashboard():
     result = cur.execute("SELECT * FROM articles")
 
     articles = dictArrayFromCursor(cur)
+    sorted_articles = sorted(articles, key=lambda k: k['create_date'], reverse = True)
 
     if result > 0:
-        return render_template('dashboard.html', articles=articles)
+        return render_template('dashboard.html', articles=sorted_articles)
     else:
         msg = 'No Articles Found'
         return render_template('dashboard.html', msg=msg)
